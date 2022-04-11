@@ -2,7 +2,7 @@ version: "2.1"
 services:
     backup_auth:
         image: tecnativa/duplicity:postgres
-        hostname: backup-auth
+        hostname: {{ inventory_hostname_short | lower | regex_replace('_','') }}-auth
         environment:
             DST: "swift://auth_{{ inventory_hostname|lower }}"
             PGDATABASE: "none"
@@ -20,15 +20,18 @@ services:
             JOB_300_WHAT: "dup full $$SRC $$DST"
             JOB_302_WHAT: "dup remove-all-but-n-full 30 --force $$DST $$@"
             JOB_302_WHEN: "daily"
+            OPTIONS: "--allow-source-mismatch"
         command:
             - /etc/periodic/daily/jobrunner
         volumes:
             - auth_config:/mnt/backup/src/config:z
             - auth_db:/mnt/backup/src/db:z
             - auth_lemonldap_conf:/mnt/backup/src/lemonldap_conf:z
-            - /home/docker/backups/ldap_backup.ldif:/mnt/backup/src/ldap_backup.ldif:z
+            - /home/docker/backups/ldap_backup.ldif:/mnt/backup/src/ldap_backup.ldif:ro
+            - auth_backup2_cache:/root/.cache/duplicity/
 
 volumes:
+    auth_backup2_cache:
     auth_config:
         external: true
     auth_db:
