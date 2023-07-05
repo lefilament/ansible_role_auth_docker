@@ -1,7 +1,7 @@
 version: "2.1"
 services:
     backup_auth:
-        image: tecnativa/duplicity:postgres
+        image: ghcr.io/tecnativa/docker-duplicity-postgres:master
         hostname: {{ inventory_hostname_short | lower | regex_replace('_','') }}-auth
         environment:
             DST: "swift://auth_{{ inventory_hostname|lower }}"
@@ -20,7 +20,6 @@ services:
             JOB_300_WHAT: "dup full $$SRC $$DST"
             JOB_302_WHAT: "dup remove-all-but-n-full 30 --force $$DST $$@"
             JOB_302_WHEN: "daily"
-            OPTIONS: "--allow-source-mismatch"
         command:
             - /etc/periodic/daily/jobrunner
         volumes:
